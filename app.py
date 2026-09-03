@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
@@ -26,6 +27,20 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
+    # A comma-separated allowlist, e.g.:
+    # FRONTEND_ORIGINS="https://your-frontend.vercel.app,http://localhost:3000"
+    frontend_origins = [
+        origin.strip()
+        for origin in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000").split(",")
+        if origin.strip()
+    ]
+    CORS(
+        app,
+        origins=frontend_origins,
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization"],
+    )
+
     db.init_app(app)
     jwt.init_app(app)
     migrate.init_app(app, db)
@@ -41,3 +56,7 @@ def create_app(config=None):
     app.register_blueprint(order_bp)
 
     return app
+
+
+# Vercel discovers this module-level WSGI application in app.py.
+app = create_app()
