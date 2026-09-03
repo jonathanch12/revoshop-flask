@@ -35,6 +35,7 @@ def get_products():
         products = Product.query.filter_by(is_deleted=False).all()
         return jsonify([product.to_dict() for product in products]), 200
     except Exception as e:
+        print(f"Error getting products: {e}")
         return jsonify({"message": "Failed to get products", "status": "error"}), 500
 
 
